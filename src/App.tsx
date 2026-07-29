@@ -1,87 +1,49 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import './App.css';
-
-const technologies = ['TypeScript', 'JavaScript', 'Python', 'C++', 'Node.js', 'Flask', 'FastAPI', 'Next.js', 'ReactJS', 'SQL'];
-
-const experiences = [
-  { company: 'Deutsche Bank', role: 'Full Stack Developer', period: 'Jan 2026 – Present' },
-  { company: 'Deutsche Bank', role: 'Full Stack Engineer Intern', period: 'Jun 2025 – Aug 2025' },
-  { company: 'Avanade', role: 'Data & AI Intern', period: 'Jun 2024 – Aug 2024' },
-];
-
-const education = [
-  {
-    institution: 'University College London',
-    period: '2022 – 2025',
-    degree: 'BSc Biochemistry',
-    grade: 'First Class Honours',
-    modules: [
-      { name: 'Python for Bioscience Research (Final Exam)', grade: '96%' },
-      { name: 'Dissertation: Deep Learning in NMR', grade: '82%' },
-    ],
-  },
-  {
-    institution: 'A Levels',
-    period: '2020 – 2022',
-    subjects: [
-      { subject: 'Biology', grade: 'A*' },
-      { subject: 'Chemistry', grade: 'A*' },
-      { subject: 'Mathematics', grade: 'A*' },
-      { subject: 'EPQ', grade: 'A*' },
-    ],
-  },
-];
 
 const projects = [
   {
+    name: 'Planter Visualiser',
+    period: 'Jul 2026',
+    summary:
+      'A prototype pipeline that shows a London venue its own doorway restyled with a client’s planters, discovering and ranking independent venues in a bounded area, working out the Street View heading that actually faces each frontage, vision-checking every shot before use, generatively compositing the planters to scale, and passing the result through a reject gate before it is published.',
+    stack: ['Python', 'OpenAI', 'Google Places', 'Street View API', 'Netlify'],
+    repo: 'https://github.com/bobbyjames839/planter-visualiser',
+    demo: 'https://innate-planter-prototype.netlify.app',
+    demoLabel: 'Live viewer',
+  },
+  {
+    name: 'Glucose Monitor',
+    period: 'Apr 2026',
+    summary:
+      'A FastAPI service that polls FreeStyle LibreLink for live CGM readings around the clock, stores them in Postgres and rolls each day up into time-in-range, average and standard-deviation statistics, pushes threshold alerts to a phone through Expo with configurable limits and silencing, and exposes the whole history to an OpenAI tool-calling chat endpoint that can query summaries or individual readings to explain spikes and lows.',
+    stack: ['Python', 'FastAPI', 'PostgreSQL', 'OpenAI', 'APScheduler', 'Expo'],
+    repo: 'https://github.com/bobbyjames839/diabetes-workflow-backend',
+  },
+  {
     name: 'Bobee',
-    tag: 'On AppStore',
     period: 'Jun 2025',
-    summary: 'AI journalling & reflection app.',
+    summary:
+      'An AI journalling and reflection app that turns voice notes into transcripts and written insights, charts mood and productivity trends over time, and answers questions through a personalised chatbot built on your stored profile context.',
     stack: ['React Native', 'Node.js', 'Firebase', 'OpenAI', 'Render'],
-    highlights: [
-      'Voice note → transcript + insight pipeline',
-      'Mood & productivity trend charts',
-      'Personalised chatbot using stored profile context',
-    ],
+    repo: 'https://github.com/bobbyjames839/bobee-backend',
     demo: 'https://www.youtube.com/watch?v=fFQEB0aCTBg',
   },
   {
     name: 'ChatGPT Clone',
     period: 'Jul 2024',
-    summary: 'Lightweight ChatGPT-style web app.',
+    summary:
+      'A lightweight ChatGPT-style web app with real-time token streaming, persistent conversation memory and context windowing, layered system and user prompts alongside model and temperature controls, and session history kept behind auth with secure persistence.',
     stack: ['ReactJS', 'Flask', 'Firebase', 'OpenAI', 'Stripe'],
-    highlights: [
-      'Token streaming responses (real-time reveal)',
-      'Persistent conversation memory & context windowing',
-      'System / user prompt layering + model & temperature controls',
-      'Session history stored with auth & secure persistence',
-    ],
     demo: 'https://www.youtube.com/watch?v=G8Z5GTUMJG8',
   },
   {
     name: 'Calendar Booking System',
     period: 'Aug 2024',
-    summary: 'Multi-role scheduling & appointment platform for salons.',
+    summary:
+      'A multi-role scheduling platform for salons offering client self-service booking against real-time slot availability, a stylist dashboard with daily and weekly calendars and drag-to-reschedule, automated email confirmations and cancellations, and support for blocked time, PTO and recurring schedule templates.',
     stack: ['ReactJS', 'Flask', 'Firebase', 'Netlify'],
-    highlights: [
-      'Client self-service booking with real-time slot availability',
-      'Stylist dashboard: daily/weekly calendar, drag-to-reschedule',
-      'Automated email confirmations & cancellations',
-      'Blocked time / PTO & recurring schedule templates',
-    ],
-  },
-  {
-    name: 'Insulin Dose Predictor',
-    period: 'Jun 2024',
-    summary: 'ML tool estimating mealtime insulin dose.',
-    stack: ['React', 'Flask', 'Scikit-learn'],
-    highlights: [
-      'Food entry with Open Food API → auto carb & macro parsing',
-      'Feature set: carbs, time-of-day, pre-meal glucose, activity level, +10',
-      'Random Forest Regressor tuned for MAE < 1.0U',
-      'Confidence band + warning when uncertainty high',
-    ],
+    repo: 'https://github.com/bobbyjames839/calendar',
   },
 ];
 
@@ -103,12 +65,17 @@ const EmailIcon = () => (
   </svg>
 );
 
-function SectionHeading({ children }: { children: React.ReactNode }) {
+const linkClass =
+  'flex items-center gap-2 text-sm text-zinc-500 hover:text-violet-700 transition-colors';
+
+function BackgroundBlobs() {
   return (
-    <h2 className="text-xs font-medium uppercase tracking-widest text-zinc-500 mb-8 flex items-center gap-2">
-      <span className="section-heading-accent" />
-      {children}
-    </h2>
+    <div className="blob-layer" aria-hidden="true">
+      <span className="blob blob-violet" />
+      <span className="blob blob-sky" />
+      <span className="blob blob-rose" />
+      <span className="blob blob-amber" />
+    </div>
   );
 }
 
@@ -132,189 +99,197 @@ function AnimatedSection({ children, className = '' }: { children: React.ReactNo
   return <div ref={ref} className={`scroll-fade ${className}`}>{children}</div>;
 }
 
-function App() {
+function FooterLinks({ className = '' }: { className?: string }) {
   return (
-    <div className="min-h-screen bg-zinc-950 text-white font-sans">
+    <div className={`flex flex-wrap justify-center gap-x-8 gap-y-3 pb-4 pt-8 ${className}`}>
+      <a href="mailto:bobbyjames839@gmail.com" className={linkClass}>
+        <EmailIcon /> bobbyjames839@gmail.com
+      </a>
+      <a href="https://github.com/bobbyjames839" target="_blank" rel="noopener noreferrer" className={linkClass}>
+        <GitHubIcon /> GitHub
+      </a>
+      <a href="https://www.linkedin.com/in/bobby-davidson1/" target="_blank" rel="noopener noreferrer" className={linkClass}>
+        <LinkedInIcon /> LinkedIn
+      </a>
+    </div>
+  );
+}
 
-      {/* Nav */}
-      <nav className="fixed top-0 w-full bg-zinc-950/80 backdrop-blur border-b border-zinc-800 z-10">
-        <div className="max-w-3xl mx-auto px-6 py-4 flex justify-between items-center">
-          <span className="font-bold tracking-tight gradient-text">BD</span>
-          <div className="flex gap-6 text-sm text-zinc-400">
-            <a href="#experience" className="nav-link hover:text-white transition-colors">Experience</a>
-            <a href="#work" className="nav-link hover:text-white transition-colors">Work</a>
-            <a href="#contact" className="nav-link hover:text-white transition-colors">Contact</a>
-          </div>
+/**
+ * Momentum scrolling: the wheel updates a target offset and rAF eases the real
+ * scroll position toward it, which is what gives sites that "weighted" feel.
+ * Trackpads and touch already have native inertia, so only mouse wheels are
+ * intercepted — and nothing is if the user asked for reduced motion.
+ */
+function useSmoothScroll() {
+  useEffect(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (window.matchMedia('(pointer: coarse)').matches) return;
+
+    let target = window.scrollY;
+    let current = target;
+    let frame = 0;
+    let running = false;
+
+    const maxScroll = () => document.documentElement.scrollHeight - window.innerHeight;
+
+    const animate = () => {
+      current += (target - current) * 0.12;
+      if (Math.abs(target - current) < 0.5) {
+        current = target;
+        running = false;
+      }
+      window.scrollTo(0, current);
+      if (running) frame = requestAnimationFrame(animate);
+    };
+
+    const onWheel = (e: WheelEvent) => {
+      if (e.ctrlKey) return;                 // pinch-zoom
+      if (e.deltaMode !== 0) return;         // line/page scrolling, leave native
+      if (Math.abs(e.deltaY) < Math.abs(e.deltaX)) return;
+
+      e.preventDefault();
+      target = Math.max(0, Math.min(maxScroll(), target + e.deltaY));
+      if (!running) {
+        running = true;
+        current = window.scrollY;
+        frame = requestAnimationFrame(animate);
+      }
+    };
+
+    // Keyboard, scrollbar drags and anchor jumps bypass the wheel handler.
+    const onScroll = () => { if (!running) { target = window.scrollY; current = target; } };
+
+    window.addEventListener('wheel', onWheel, { passive: false });
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener('wheel', onWheel);
+      window.removeEventListener('scroll', onScroll);
+    };
+  }, []);
+}
+
+function useHashRoute() {
+  const [hash, setHash] = useState(window.location.hash);
+  useEffect(() => {
+    const onChange = () => setHash(window.location.hash);
+    window.addEventListener('hashchange', onChange);
+    return () => window.removeEventListener('hashchange', onChange);
+  }, []);
+  return hash;
+}
+
+function Home() {
+  return (
+    <main className="min-h-screen flex flex-col px-6 relative">
+      <div className="flex-1 flex flex-col items-center justify-center text-center">
+        <h1 className="fade-up fade-up-1 text-5xl sm:text-7xl font-semibold tracking-tight leading-tight pb-2 mb-4 gradient-text-animated">
+          Bobby Davidson
+        </h1>
+
+        <p className="fade-up fade-up-2 flex items-center gap-3 text-zinc-500 text-sm tracking-wide mb-12">
+          <span className="hero-rule" />
+          Software Engineer at <span className="text-zinc-900 font-medium">Deutsche Bank</span>
+          <span className="hero-rule" />
+        </p>
+
+        <a href="#/work" className="fade-up fade-up-3 work-link text-sm font-medium text-violet-700">
+          View my work
+          <span className="work-link-arrow">→</span>
+        </a>
+      </div>
+
+      <FooterLinks className="fade-up fade-up-4" />
+    </main>
+  );
+}
+
+function Work() {
+  return (
+    <main className="min-h-screen flex flex-col px-6">
+      <div className="w-full max-w-4xl mx-auto flex-1 pt-24">
+
+        <header className="flex flex-col items-center text-center mb-20">
+          <h1 className="fade-up fade-up-1 text-4xl sm:text-6xl font-semibold tracking-tight leading-tight pb-2 mb-4 gradient-text-animated">
+            Work
+          </h1>
+          <p className="fade-up fade-up-2 flex items-center gap-3 text-zinc-500 text-sm tracking-wide">
+            <span className="hero-rule" />
+            A few things I&rsquo;ve built
+            <span className="hero-rule" />
+          </p>
+        </header>
+
+        <div className="flex flex-col gap-5 pb-16">
+          {projects.map(p => (
+            <AnimatedSection key={p.name}>
+              <article className="tile">
+                <div className="w-full flex items-baseline justify-between gap-4 mb-3">
+                  <h2 className="text-lg font-medium tracking-tight text-zinc-900">{p.name}</h2>
+                  <span className="text-xs text-zinc-400 shrink-0 ml-auto text-right">{p.period}</span>
+                </div>
+
+                <p className="text-sm leading-relaxed text-zinc-600 mb-5">{p.summary}</p>
+
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-zinc-400">
+                  {p.stack.map((t, i) => (
+                    <span key={t}>
+                      {i > 0 && <span className="mr-2 text-zinc-300">·</span>}
+                      {t}
+                    </span>
+                  ))}
+                </div>
+
+                {(('repo' in p && p.repo) || ('demo' in p && p.demo)) && (
+                  <div className="flex flex-wrap items-center gap-x-6 gap-y-2 mt-5">
+                    {'repo' in p && p.repo && (
+                      <a
+                        href={p.repo}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="work-link text-sm font-medium text-violet-700"
+                      >
+                        <GitHubIcon /> Code
+                      </a>
+                    )}
+                    {'demo' in p && p.demo && (
+                      <a
+                        href={p.demo}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="work-link text-sm font-medium text-violet-700"
+                      >
+                        {'demoLabel' in p && p.demoLabel ? p.demoLabel : 'Demo video'}
+                        <span className="work-link-arrow">→</span>
+                      </a>
+                    )}
+                  </div>
+                )}
+              </article>
+            </AnimatedSection>
+          ))}
         </div>
-      </nav>
+      </div>
 
-      <main className="max-w-3xl mx-auto px-6">
+      <FooterLinks />
+    </main>
+  );
+}
 
-        {/* Hero */}
-        <section className="pt-40 pb-24 border-b border-zinc-800 relative">
-          <div className="hero-glow" />
-          <p className="fade-up fade-up-1 text-violet-400 text-xs tracking-widest uppercase mb-4 z-10 relative">Full Stack Developer</p>
-          <h1 className="fade-up fade-up-2 text-5xl font-bold mb-3 gradient-text-animated">Bobby Davidson</h1>
-          <p className="fade-up fade-up-3 text-zinc-400 text-lg mb-8">Building products at Deutsche Bank</p>
+function App() {
+  const hash = useHashRoute();
+  const isWork = hash.startsWith('#/work');
+  useSmoothScroll();
 
-          <div className="fade-up fade-up-4 flex flex-wrap gap-3 mb-10">
-            <a href="mailto:bobbyjames839@gmail.com" className="flex items-center gap-2 px-4 py-2 bg-zinc-900 border border-zinc-800 rounded-lg text-sm text-zinc-300 hover:text-violet-300 hover:border-violet-800 transition-all">
-              <EmailIcon /> bobbyjames839@gmail.com
-            </a>
-            <a href="https://github.com/bobbyjames839" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 bg-zinc-900 border border-zinc-800 rounded-lg text-sm text-zinc-300 hover:text-violet-300 hover:border-violet-800 transition-all">
-              <GitHubIcon /> GitHub
-            </a>
-            <a href="https://www.linkedin.com/in/bobby-davidson1/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 bg-zinc-900 border border-zinc-800 rounded-lg text-sm text-zinc-300 hover:text-violet-300 hover:border-violet-800 transition-all">
-              <LinkedInIcon /> LinkedIn
-            </a>
-          </div>
+  useEffect(() => { window.scrollTo(0, 0); }, [isWork]);
 
-          <div className="fade-up fade-up-5 flex flex-wrap gap-2">
-            {technologies.map(t => (
-              <span key={t} className="tech-pill px-3 py-1.5 bg-zinc-900 border border-zinc-800 rounded-full text-sm text-zinc-300">{t}</span>
-            ))}
-          </div>
-        </section>
-
-        {/* Experience */}
-        <section id="experience" className="py-24 border-b border-zinc-800">
-          <SectionHeading>Experience</SectionHeading>
-          <div className="flex flex-col gap-3">
-            {experiences.map((exp, i) => (
-              <AnimatedSection key={exp.role + exp.period}>
-                <div className="card-hover bg-zinc-900 border border-zinc-800 rounded-xl p-5">
-                  <div className="flex justify-between items-start gap-4 mb-1">
-                    <span className="font-medium text-violet-300 text-sm">{exp.company}</span>
-                    <span className="text-xs text-zinc-500 shrink-0">{exp.period}</span>
-                  </div>
-                  <span className="text-sm text-zinc-400">{exp.role}</span>
-                </div>
-              </AnimatedSection>
-            ))}
-          </div>
-        </section>
-
-        {/* Education */}
-        <section className="py-24 border-b border-zinc-800">
-          <SectionHeading>Education</SectionHeading>
-          <div className="flex flex-col gap-3">
-            {education.map(item => (
-              <AnimatedSection key={item.institution}>
-                <div className="card-hover bg-zinc-900 border border-zinc-800 rounded-xl p-5">
-                  <div className="flex justify-between items-start gap-4 mb-1">
-                    <span className="font-medium text-violet-300 text-sm">{item.institution}</span>
-                    <span className="text-xs text-zinc-500 shrink-0">{item.period}</span>
-                  </div>
-                  {'degree' in item && (
-                    <>
-                      <div className="flex justify-between text-sm mb-3">
-                        <span className="text-zinc-400">{item.degree}</span>
-                        <span className="text-violet-400 font-medium">{item.grade}</span>
-                      </div>
-                      <p className="text-xs text-zinc-500 uppercase tracking-widest mb-2">Notable Modules</p>
-                      <ul className="space-y-1.5">
-                        {item.modules!.map(m => (
-                          <li key={m.name} className="flex justify-between text-sm gap-4">
-                            <span className="text-zinc-400">{m.name}</span>
-                            <span className="text-violet-400 font-medium shrink-0">{m.grade}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </>
-                  )}
-                  {'subjects' in item && (
-                    <ul className="grid grid-cols-2 gap-1.5 mt-1">
-                      {item.subjects!.map(s => (
-                        <li key={s.subject} className="flex justify-between text-sm">
-                          <span className="text-zinc-400">{s.subject}</span>
-                          <span className="text-violet-400 font-medium">{s.grade}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-              </AnimatedSection>
-            ))}
-          </div>
-        </section>
-
-        {/* Work */}
-        <section id="work" className="py-24 border-b border-zinc-800">
-          <SectionHeading>Work</SectionHeading>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {projects.map(p => (
-              <AnimatedSection key={p.name}>
-                <div className="card-hover bg-zinc-900 border border-zinc-800 rounded-xl p-6 flex flex-col gap-4 h-full">
-                  <div>
-                    <div className="flex items-center justify-between gap-2 mb-1">
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-medium text-white text-sm">{p.name}</h3>
-                        {'tag' in p && p.tag && (
-                          <span className="text-xs px-2 py-0.5 bg-violet-950 border border-violet-800 rounded-full text-violet-400">{p.tag}</span>
-                        )}
-                      </div>
-                      <span className="text-xs text-zinc-500 shrink-0">{p.period}</span>
-                    </div>
-                    <p className="text-sm text-zinc-400">{p.summary}</p>
-                  </div>
-
-                  <div className="flex flex-wrap gap-1.5">
-                    {p.stack.map(t => (
-                      <span key={t} className="text-xs px-2 py-1 bg-zinc-800 border border-zinc-700 rounded-md text-violet-300">{t}</span>
-                    ))}
-                  </div>
-
-                  <ul className="space-y-1.5 flex-1">
-                    {p.highlights.map(h => (
-                      <li key={h} className="text-sm text-zinc-400 flex gap-2">
-                        <span className="text-violet-600 shrink-0 mt-0.5">–</span>
-                        <span>{h}</span>
-                      </li>
-                    ))}
-                  </ul>
-
-                  {'demo' in p && p.demo && (
-                    <a
-                      href={p.demo}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-sm text-violet-400 border border-violet-800 rounded-lg px-4 py-2 text-center hover:bg-violet-950 hover:text-violet-300 transition-all"
-                    >
-                      Demo Video
-                    </a>
-                  )}
-                </div>
-              </AnimatedSection>
-            ))}
-          </div>
-        </section>
-
-        {/* Contact */}
-        <section id="contact" className="py-24">
-          <SectionHeading>Contact</SectionHeading>
-          <AnimatedSection>
-            <div className="flex flex-wrap gap-3">
-              <a href="mailto:bobbyjames839@gmail.com" className="flex items-center gap-2 px-4 py-2 bg-zinc-900 border border-zinc-800 rounded-lg text-sm text-zinc-300 hover:text-violet-300 hover:border-violet-800 transition-all">
-                <EmailIcon /> bobbyjames839@gmail.com
-              </a>
-              <a href="https://github.com/bobbyjames839" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 bg-zinc-900 border border-zinc-800 rounded-lg text-sm text-zinc-300 hover:text-violet-300 hover:border-violet-800 transition-all">
-                <GitHubIcon /> GitHub
-              </a>
-              <a href="https://www.linkedin.com/in/bobby-davidson1/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 bg-zinc-900 border border-zinc-800 rounded-lg text-sm text-zinc-300 hover:text-violet-300 hover:border-violet-800 transition-all">
-                <LinkedInIcon /> LinkedIn
-              </a>
-            </div>
-          </AnimatedSection>
-        </section>
-
-      </main>
-
-      <footer className="border-t border-zinc-800">
-        <div className="max-w-3xl mx-auto px-6 py-5 text-zinc-600 text-sm">
-          © {new Date().getFullYear()} Bobby Davidson
-        </div>
-      </footer>
-
+  return (
+    <div className="min-h-screen bg-white text-zinc-900 font-sans relative overflow-hidden">
+      <BackgroundBlobs />
+      <div className="relative z-10">
+        {isWork ? <Work /> : <Home />}
+      </div>
     </div>
   );
 }
