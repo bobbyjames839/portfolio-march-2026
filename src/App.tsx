@@ -3,14 +3,14 @@ import './App.css';
 
 const projects = [
   {
-    name: 'Planter Visualiser',
-    period: 'Jul 2026',
+    name: 'Akone',
+    period: 'Oct 2026',
     summary:
-      'A prototype pipeline that shows a London venue its own doorway restyled with a client’s planters, discovering and ranking independent venues in a bounded area, working out the Street View heading that actually faces each frontage, vision-checking every shot before use, generatively compositing the planters to scale, and passing the result through a reject gate before it is published.',
-    stack: ['Python', 'OpenAI', 'Google Places', 'Street View API', 'Netlify'],
-    repo: 'https://github.com/bobbyjames839/planter-visualiser',
-    demo: 'https://innate-planter-prototype.netlify.app',
-    demoLabel: 'Live viewer',
+      'A platform of small, realistic Python puzzles that you solve by reading and reasoning through the code, fixing a single planted bug or writing a function from scratch in an in-browser editor with live type checking, running it in a real shell streamed over a websocket into a sandboxed Docker container, judging solutions against the original tests server-side, and offering an AI assistant that answers Python questions while refusing anything that would give the puzzle away.',
+    stack: ['React', 'FastAPI', 'Supabase', 'Docker', 'OpenAI', 'Astro'],
+    repo: 'https://github.com/bobbyjames839/puzzle',
+    demo: 'https://akone.dev',
+    demoLabel: 'Live site',
   },
   {
     name: 'Glucose Monitor',
